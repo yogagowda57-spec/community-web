@@ -326,6 +326,9 @@ function initStats() {
 }
 
 /* ---------- Reveal-on-scroll ---------- */
+// Cards reveal with a small staggered delay based on their position within
+// their parent grid, so a row of cards rises in one smooth wave instead of
+// popping in all at once.
 let revealObserver = null;
 function observeReveal() {
   if (!revealObserver) {
@@ -338,10 +341,65 @@ function observeReveal() {
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
   }
-  document.querySelectorAll(".reveal:not(.in-view)").forEach((el) => revealObserver.observe(el));
+
+  document.querySelectorAll(".reveal:not(.in-view)").forEach((el) => {
+    if (!el.style.getPropertyValue("--reveal-delay")) {
+      const siblings = Array.from(el.parentElement ? el.parentElement.children : []);
+      const index = siblings.indexOf(el);
+      const delay = Math.min(index, 8) * 0.07;
+      el.style.setProperty("--reveal-delay", `${delay}s`);
+    }
+    revealObserver.observe(el);
+  });
+
+  // Section headings fade in independently of the .reveal cards below them.
+  document.querySelectorAll(".section-head:not(.in-view)").forEach((el) => revealObserver.observe(el));
+}
+
+/* ---------- Scroll progress bar + navbar shrink ---------- */
+function initScrollEffects() {
+  const progressBar = document.getElementById("scrollProgress");
+  const navbar = document.querySelector(".navbar");
+  const heroVisual = document.querySelector(".hero-visual");
+  const heroGlow = document.querySelector(".hero-glow");
+
+  let ticking = false;
+
+  function update() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    if (navbar) navbar.classList.toggle("scrolled", scrollTop > 24);
+
+    // Subtle parallax: the hero visual and glow drift slightly slower than
+    // the page scroll, only while the hero is still on screen.
+    if (heroVisual && scrollTop < window.innerHeight) {
+      heroVisual.style.transform = `translateY(${scrollTop * 0.08}px)`;
+    }
+    if (heroGlow && scrollTop < window.innerHeight) {
+      heroGlow.style.opacity = String(Math.max(1 - scrollTop / 600, 0.25));
+    }
+
+    ticking = false;
+  }
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
+
+  update();
 }
 
 /* ---------- Hero terminal typing effect ---------- */
@@ -412,5 +470,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initStats();
   initHeroTerminal();
   initScrollSpy();
+  initScrollEffects();
   observeReveal();
 });

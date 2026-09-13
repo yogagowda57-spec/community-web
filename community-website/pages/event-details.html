@@ -16,13 +16,24 @@
       position: relative;
       border-radius: var(--radius-l);
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-soft);
       margin-bottom: var(--space-4);
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .details-hero.in-view {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
     .details-hero img {
       width: 100%;
       aspect-ratio: 21 / 8;
       object-fit: cover;
+      transition: transform 0.8s var(--ease);
+    }
+    .details-hero:hover img {
+      transform: scale(1.03);
     }
     .details-hero-overlay {
       position: absolute;
@@ -52,6 +63,13 @@
     }
     .details-block {
       margin-bottom: var(--space-4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    .details-block.in-view {
+      opacity: 1;
+      transform: translateY(0);
     }
     .details-block h2 {
       font-size: 1.2rem;
@@ -108,10 +126,14 @@
       margin-bottom: 0.2rem;
     }
     .faq-item {
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-soft);
       border-radius: var(--radius-s);
       overflow: hidden;
       background: var(--surface);
+      transition: border-color 0.3s var(--ease);
+    }
+    .faq-item:hover {
+      border-color: rgba(255, 106, 61, 0.35);
     }
     .faq-item summary {
       cursor: pointer;
@@ -139,11 +161,19 @@
     }
     .sidebar-card {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-soft);
       border-radius: var(--radius-l);
       padding: var(--space-4);
       position: sticky;
       top: 96px;
+      box-shadow: var(--shadow-soft);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .sidebar-card.in-view {
+      opacity: 1;
+      transform: translateY(0);
     }
     .sidebar-row {
       display: flex;
@@ -195,6 +225,8 @@
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
+
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
   <header class="navbar">
     <div class="container nav-inner">

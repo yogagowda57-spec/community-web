@@ -158,6 +158,60 @@ function renderEventDetails(ev) {
   }
 
   document.title = `${ev.title} — NEXUS`;
+
+  observeDetailsReveal();
+}
+
+/* Reveal the hero image, each content block, and the sidebar card as they
+   scroll into view, matching the homepage's scroll-reveal treatment. */
+function observeDetailsReveal() {
+  const targets = document.querySelectorAll(".details-hero, .details-block, .sidebar-card");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+  );
+
+  targets.forEach((el, i) => {
+    el.style.transitionDelay = `${Math.min(i, 6) * 0.08}s`;
+    observer.observe(el);
+  });
+}
+
+/* Fill the scroll progress bar and shrink the navbar on scroll, matching
+   the homepage's scroll behaviour. */
+function initScrollEffectsDetails() {
+  const progressBar = document.getElementById("scrollProgress");
+  const navbar = document.querySelector(".navbar");
+  let ticking = false;
+
+  function update() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    if (navbar) navbar.classList.toggle("scrolled", scrollTop > 24);
+    ticking = false;
+  }
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
+
+  update();
 }
 
 let toastTimerDetails = null;
@@ -185,6 +239,7 @@ function initNavDetails() {
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("year") && (document.getElementById("year").textContent = new Date().getFullYear());
   initNavDetails();
+  initScrollEffectsDetails();
 
   const id = getEventIdFromUrl();
   const container = document.getElementById("detailsContainer");
